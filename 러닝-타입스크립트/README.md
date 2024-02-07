@@ -9,4 +9,4 @@
 [Chapter 7. 인터페이스](https://github.com/kiyoung92/books/blob/main/%EB%9F%AC%EB%8B%9D-%ED%83%80%EC%9E%85%EC%8A%A4%ED%81%AC%EB%A6%BD%ED%8A%B8/chapter7-%EC%9D%B8%ED%84%B0%ED%8E%98%EC%9D%B4%EC%8A%A4.md)  
 [Chapter 8. 클래스](https://github.com/kiyoung92/books/blob/main/%EB%9F%AC%EB%8B%9D-%ED%83%80%EC%9E%85%EC%8A%A4%ED%81%AC%EB%A6%BD%ED%8A%B8/chapter8-%ED%81%B4%EB%9E%98%EC%8A%A4.md)  
 [Chapter 9. 타입 제한자](https://github.com/kiyoung92/books/blob/main/%EB%9F%AC%EB%8B%9D-%ED%83%80%EC%9E%85%EC%8A%A4%ED%81%AC%EB%A6%BD%ED%8A%B8/chapter9-%ED%83%80%EC%9E%85-%EC%A0%9C%ED%95%9C%EC%9E%90.md)  
-[Chapter 10. 제네릭](https://github.com/kiyoung92/books/blob/main/%EB%9F%AC%EB%8B%9D-%ED%83%80%EC%9E%85%EC%8A%A4%ED%81%AC%EB%A6%BD%ED%8A%B8/chapter9-%EC%A0%9C%EB%84%A4%EB%A6%AD.md)  
+[Chapter 10. 제네릭](https://github.com/kiyoung92/books/blob/main/%EB%9F%AC%EB%8B%9D-%ED%83%80%EC%9E%85%EC%8A%A4%ED%81%AC%EB%A6%BD%ED%8A%B8/chapter10-%EC%A0%9C%EB%84%A4%EB%A6%AD.md)  
