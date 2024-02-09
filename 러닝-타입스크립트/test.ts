@@ -58,18 +58,38 @@
 // isNumberOrString(1);
 
 
-interface Comedian {
-  funny: boolean;
-}
+// interface Comedian {
+//   funny: boolean;
+// }
 
-interface StandupComedian extends Comedian {
-  routine: string;
-}
+// interface StandupComedian extends Comedian {
+//   routine: string;
+// }
 
-function isStandupComedian(value: Comedian): value is StandupComedian {
-  console.log('routine' in value);
+// function isStandupComedian(value: Comedian): value is StandupComedian {
+//   console.log('routine' in value);
   
-  return 'routine' in value;
+//   return 'routine' in value;
+// }
+
+// isStandupComedian({ funny: true })
+
+function returnParams<T>(input: T) {
+  return input;
 }
 
-isStandupComedian({ funny: true })
+const numberGeneric = returnParams(1234); // Type: number
+const stringGeneric = returnParams('hello'); // Type: string
+
+
+function foo<T>(callback: (input: T) => void) {
+  return (input: T) => {
+    console.log(input);
+    callback(input);
+  }
+}
+
+// Type: (input: string) => void
+foo<string>(input => {
+  console.log(input)
+})
