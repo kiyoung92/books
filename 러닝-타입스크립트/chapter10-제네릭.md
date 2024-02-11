@@ -4,6 +4,8 @@
 
 ### 학심 한 줄 요약
 
+    제네릭을 과도하게 사용하면 코드가 복잡해지고 읽기 어려울 수 있으니 제네릭은 꼭 필요한 경우에만 사용하자.
+
 </br></br>
 
 ### 제네릭 함수
@@ -268,10 +270,225 @@ const userId = user.getInfo(10); // Type: { key: string, value: number }
 
 #### 정적 클래스 제네릭
 
+정적 클래스 메서드는 자체 타입 매개변수를 선언할 수 있지만 클래스에 선언된 어떤 타입 매개변수에도 접근할 수 없음.
+
+```typescript
+class User<T> {
+  getUser(user: T) {
+    console.log(user);
+
+    return user;
+  }
+
+  static staticGetUser<T>(user: T) {
+    let fromInstance: T; // Error: Static members cannot reference class type arguments.
+
+    return user;
+  }
+}
+```
+
+</br></br>
+
+### 제네릭 타입 별칭
+
+#### 제네릭 판별된 유니언
+
+데이터의 성공적인 결과 또는 오류로 인한 실패를 나타내는 제네릭 '결과'타입을 만들기 위해 타입 인수를 추가
+
+```typescript
+type Result<T> = FailResult | SuccessResult<T>;
+
+interface FailResult {
+  error: Error;
+  successed: false;
+}
+
+interface SuccessResult<T> {
+  data: T;
+  successed: true;
+}
+
+function handleResult(result: Result<string>) {
+  if (result.successed) {
+    console.log(result.data);
+  } else {
+    console.log(result.error);
+  }
+}
+```
+
+</br></br>
+
+### 제네릭 제한자
+
+#### 제네릭 기본값
+매개변수 선언 뒤에 `=`와 기본 타입을 배치해 타입 인수를 명시적으로 제공할 수 있음  
+기본값은 타입 인수가 명시적으로 선언되지 않고 유추할 수 없는 모든 후속 타입에 사용
+
+```typescript
+interface User<T = string> {
+  name: T;
+}
+
+let stringInterface: User = { value: 'helloworld' };
+
+let numberInterface: User<number> = { value: 1234 };
+
+let errorInterface = { value: 12345 }; // Error: 기본 타입이 string이기 때문
+
+
+
+interface KeyValue<Key, Value = Key> {
+  key: Key;
+  value: Value;
+}
+
+let allType: KeyValue<string, number> = {
+  key: 'hello',
+  value: 1234,
+}
+
+let defaultType: KeyValue<string> = {
+  key: 'hello',
+  value: 'world',
+}
+```
+
+</br>
+
+제네릭 타입이 기본값이 있는 타입은 제일 마지막에 있어야함
+
+```typescript
+function inTheEnd<First, Second = number, Third = number>() {};
+
+function inTheMiddle<First, Second = number, Third>() {}; // Error: 기본값이 있는 타입이 중간에 있기 때문
+```
+
+</br></br>
+
+### 제한된 제네릭 타입
+
+타입스크립트는 타입 매개변수가 타입을 확장해야 한다고 선언할 수 있음. (별칭 타입에만 허용)  
+매개변수 이름 뒤이 `extends` 키워드를 사용
+
+```typescript
+interface User {
+  name: string;
+}
+
+function getUserInfo<T extends User>(input: T) {
+  console.log(input);
+
+  return input;
+}
+
+getUserInfo('hello'); // Type: string
+getUserInfo([true, false]); // Type: boolean[]
+```
+
+</br>
+
+#### `keyof`와 제한된 타입 매개변수
+
+`extends`와 `keyof`를 함께 사용하면 타입 매개변수를 이전 타입 매개변수의 키로 제한할 수 있음.  
+제네릭 타입의 키를 지정하는 유일한 방법
+
+```typescript
+function get<T, Key extends keyof T>(container: T, key: Key) {
+  return container[key];
+}
+
+const container = {
+  'hello': 'world',
+  'stringArr': ['hello', 'arr'],
+}
+
+get(container, 'hello'); // Type: string
+get(container, 'stringArr'); // Type: string[]
+```
+
+</br></br>
+
+### Promise
+
+Promise에서 resolve된 값을 나타내는 단일 타입 매개변수를 가진 Promise 클래스로 표현
+
+```typescript
+const resolveUnknown = new Promise(rs => {
+  setTimeout(() => rs('Done'), 1000);
+}); // Type: Promise<unknown>
+
+const resolveString = new Promise<string>(rs => {
+  setTimeout(() => rs('Done'), 1000);
+}); // Type: Promise<string>
+```
+
+</br>
+
+#### `async 함수`
+
+```typescript
+// Type: (name: string) => Promise<number>
+async function getUserNameLength(name: string) {
+  await new Promise(rs => setTimeout(rs, 1000));
+
+  return name.length;
+}
+
+// Type: (name: string) => Promise<number>
+async function getUserName(name: string) {
+  return name.length;
+}
+// async 함수에서 수동으로 선언된 반환 타입은 항상 Promise 타입
+```
+
+</br></br>
+
+### 제네릭 올바르게 사용하기
+
+제네릭을 과도하게 사용하면 읽기 혼란스럽고 지나치게 복잡한 코드를 만들 수 있음.  
+제네릭을 사용할 때는 무엇을 위해 사용하지는 명확해야함
+
+</br>
+
+#### 제네릭 황금률
+
+개인적인 생각으로는 Util 함수와 같이 공통으로 사용할 함수에 어울리는 것 같음.
+
+```typescript
+// 제네릭을 사용할 필요가 없는 함수
+function logInput<Input extends string>(input: Input) {
+  console.log(input);
+}
+
+// 바꾸면 이렇게
+function logInput(input: string) {
+  console.log(input);
+}
+```
+
+</br>
+
+#### 제네릭 명명 규칙
+
+보통 `T`, `U`, `V`로, 상태관리 라이브러리에서는 `S`, 키와 값 구조에는 `K`, `V`로 많이 사용하지만 용도를 가리키는 제네릭 타입 이름을 사용하는 것이 가장 좋음
+
+```typescript
+// L과 V가 무엇인지 유추할 수 없음
+function label<L, V>(l: L, k: V) {};
+
+// 좋은 예
+function label<Label, Value>(label: Label, value: Value) {};
+```
 </br></br>
 
 ### 새로 알게된 점
 
+제네릭에서 `extends` 키워드와 기본 타입을 지정해 주는 것.  
+`extends`와 `keyof`를 조합하여 필요한 곳에 사용하면 좋을 것 같다.
+
 </br></br>
 
 ### 참고
+[타입스크립트 핸드북 - 제네릭](https://www.typescriptlang.org/docs/handbook/2/generics.html)
