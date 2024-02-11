@@ -220,6 +220,54 @@ new Child('hello', 'address');
 
 #### 제네릭 인터페이스 구현
 
+기본 인터페이스의 모든 타입 매개변수는 클래스에 선언되어야 함
+
+```typescript
+interface User<T> {
+  name: T;
+}
+
+class UserInfo implements User<string> {
+  name: string;
+  isUser: boolean;
+
+  constructor(name: string, isUser: boolean) {
+    this.name = name;
+    this.isUser = isUser;
+  }
+}
+
+const userInfo = new UserInfo('hello', true);
+```
+
+</br>
+
+#### 메서드 제네릭
+
+클래스 인스턴스와 별개로 자체 제네릭 타입을 선언할 수 있음
+
+```typescript
+class User<T> {
+  name: T;
+
+  constructor(name: T) {
+    this.name = name;
+  }
+
+  getInfo<Value>(value: Value) {
+    return { 'USER_NAME': this.name, value }
+  }
+}
+
+const user = new User('hello'); // Type: User<string>
+
+const userId = user.getInfo(10); // Type: { key: string, value: number }
+```
+
+</br>
+
+#### 정적 클래스 제네릭
+
 </br></br>
 
 ### 새로 알게된 점
