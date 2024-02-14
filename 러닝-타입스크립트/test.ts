@@ -93,3 +93,16 @@ function foo<T>(callback: (input: T) => void) {
 foo<string>(input => {
   console.log(input)
 })
+
+enum StatusCode {
+  InternalServerError = 500,
+  NotFound = 404,
+  Ok = 200,
+}
+
+let statusCode: StatusCode;
+statusCode = StatusCode.Ok;
+statusCode = 200;
+
+// 책에서는 열거형 값에 임의의 숫자를 할당해도 코드 스니펫에서 허용된다고 하는데 허용되지 않음
+// statusCode = -1;
