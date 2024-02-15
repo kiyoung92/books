@@ -2,6 +2,8 @@
 
 ### 학심 한 줄 요약
 
+    이 챕터에서는 자바스크립트 소스 코드로 컴파일될 때 좋은 타입스크립트 키워드와 나쁜 키워드가 명확한 것 같으니 잘 숙지해서 사용하자.    
+
 </br></br>
 
 ### 클래스 매개변수 속성
@@ -190,10 +192,234 @@ enum StatusCode {
 
 #### const 열거형
 
+열거형은 런타임 객체를 생성하므로 리터럴 값 유니언을 사용하는 일반적인 전략보다 더 많은 코드를 생성  
+타입스크립트는 `const` 제한자로 열거형을 선언해 컴파일된 자바스크립트 코드에서 객체 정의와 속성 조회를 생략하도록 지시
 
+```typescript
+const enum StatusCode {
+    InternalServerError = 500,
+    NotFound = 404,
+    Ok = 200,
+}
+
+let statusCode = StatusCode.Ok;
+
+// 컴파일된 자바스크립트 소스 코드: 열거형 선언이 모두 누락되고 열거형의 값에 대한 주석을 사용함
+let statusCode = 200; /* StatusCode */
+```
+
+- 열거형 객체 정의를 생성하는 것이 바람직한 프로젝트라면 열거형 정의 자체가 존재하도록 만드는 `preserveConstEnums` 옵션을 사용
+
+</br></br>
+
+### 네임스페이스
+
+    ❗️기존 패키지에 대한 DefinitelyTyped 타입 정의를 작성하지 않는 한 네임스페이스는 최신 자바스크립트 모듈 의미 체계가 일치하지 않으므로 사용하지 않는 것이 좋음
+
+</br>
+
+네임스페이스는 객체의 멤버로 호출할 수 있는 내보낸 콘텐츠가 있는, 전역으로 사용 가능한 객체
+
+```typescript
+namespace User {
+    const name = 'hello';
+
+    console.log(name);
+}
+
+// 출력된 자바스크립트 코드
+var User;
+(function (User) {
+    var name = 'hello';
+    console.log(name);
+})(User || (User = {}));
+```
+
+</br>
+
+#### 네임스페이스 내보내기
+
+콘텐츠를 네임스페이스 객체 멤버로 만들어 내보낼 수 있음
+
+```typescript
+namespace User {
+    export const name = 'hello';
+    export const age = 30;
+
+    export function getName() {
+        return name;
+    }
+    console.log(User.name);
+}
+console.log(User.getName());
+
+// 출력된 자바스크립트 코드
+var User;
+(function (User) {
+    User.name = 'hello';
+    User.age = 30;
+    function getName() {
+        return User.name;
+    }
+    User.getName = getName;
+    console.log(User.name);
+})(User || (User = {}));
+console.log(User.getName());
+```
+
+</br>
+
+네임스페이스가 여러 파일에 분할되어 작성되었더라도 컴파일된 자바스크립트 코드는 하나의 네임스페이스로 합쳐짐
+
+```typescript
+// settings/constants.ts
+namespace Settings {
+    export const name = 'hello';
+}
+
+// settings/describe.ts
+namespace Settings {
+    export function getName() {
+        return name;
+    }
+}
+
+// 출력된 자바스크립트 코드
+var Settings;
+(function (Settings) {
+    Settings.name = 'hello';
+})(Settings || (Settings = {}));
+
+(function (Settings) {
+    function getName() {
+        return Settings.name;
+    }
+    Settings.getName = getName;
+})(Settings || (Settings = {}));
+
+
+// 런타임에 출력된 자바스크립트
+const Settings = {
+    name: 'hello',
+    getName: function() {
+        return this.name;
+    }
+}
+```
+
+</br>
+
+#### 중첩된 네임스페이스
+
+네임스페이스는 다른 네임스페이스 내에서 네임스페이스를 내보내거나 무한으로 중첩할 수 있음
+
+```typescript
+namespace User.Settings {
+    export const addr = 'Seoul';
+}
+
+namespace User {
+    export namespace Settings {
+        export const age = 30;
+    }
+}
+```
+
+</br>
+
+#### 타입 정의에서 네임스페이스
+
+네임스페이스는 `DefinitelyTyped` 타입 정의에 유용함  
+네임스페이스를 사용할 때는 모든 코드에 사용 가능한 전역 변수, 즉, 네임스페이스로 완벽하게 감싼 구조를 생성한다는 것을 나타내야함
+
+```typescript
+// 선언 파일
+export const value: number;
+export as namespace example;
+
+// 사용 파일
+import * as example from 'example';
+const value = window.example.value;
+```
+
+</br>
+
+#### 네임스페이스보다 모듈을 선호함
+
+네임스페이스로 구조화된 타입스크립트 코드는 웹팩과 같은 최신 빌더에서 사용하지 않는 파일을 제거하는 것이 쉽지 않음. 명시적이 아니라 암시적으로 연결을 생성하기 때문.  
+네임스페이스가 아닌 `ECMA스크립트` 모듈을 사용해 런타임 코드를 작성하는 것이 좋음
+
+```javascript
+// settings/constants.ts
+export const name = 'hello';
+
+// settings/describe.ts
+import { name } from './constants';
+
+export function getName() {
+    return name;
+}
+
+// index.ts
+import { getName } from './settings/describe';
+
+console.log(getName());
+```
+
+</br></br>
+
+### 타입 전용 가져오기와 내보내기
+
+타입스크립트의 트랜스파일러는 자바스크립트 런타임에서 사용되지 않으므로 파일의 가져오기와 내보내기에서 타입 시스템에서만 사용되는 값을 제거
+
+```typescript
+// index.ts
+const userInfo = { name: 'hello', age: 30 };
+
+type UserContury = 'KR' | 'US';
+
+export { userInfo, UserContury };
+
+// index.js
+const userInfo = { name: 'hello', age: 30 };
+
+export { userInfo };
+```
+
+- 한 번에 하나의 파일에서 작동하는 babel 같은 트랜스파일러는 타입스크립트 타입 시스템에 접근할 수 없음
+- `isolatedModules` 컴파일러 옵션은 코드가 타입스크립트가 아닌 다른 도구에서 변환되는지 확인할 때 사용
+
+</br>
+
+타입스크립트는 `export`, `import` 선언에서 개별적으로 가져온 이름 또는 전체 { ... } 객체 앞에 `type 제한자`를 추가할 수 있음 (타입 시스템에서만 사용된다는 것을 나타냄)
+
+```typescript
+// index.ts
+import { type TypeUser, value } from './example';
+import type { TypeOther } from './example';
+import type DefaultType from './example';
+
+// index.js
+import { value } from './example';
+
+export { value };
+```
+
+- 타입 전용 가져오기와 내보내기는 잘 사용하지 않음
+- 개인적인 생각으로는 코드가 복잡해 질 것 같다.
+
+</br></br>
 
 ### 새로 알게된 점
+
+얼거형 같은 경우에는 tree-shaking이 되지 않아 다른 방법을 사용한다는 글을 본적이 있다. 이 부분에 대해서는 더 정리를 해야겠다.  
+
+모듈 같은 것을 만들거나 모듈의 타입을 정의할 때는 유용하게 쓰일 것 같음.
 
 </br></br>
 
 ### 참고
+
+[타입스크립트 핸드북 - 데코레이터](https://www.typescriptlang.org/ko/docs/handbook/decorators.html)  
+[타입스크립트 핸드북 - 열거형](https://www.typescriptlang.org/ko/docs/handbook/enums.html)  
+[타입스크립트 핸드북 - 네임스페이스](https://www.typescriptlang.org/ko/docs/handbook/namespaces.html)
